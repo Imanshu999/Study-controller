@@ -7,7 +7,6 @@ on:
     branches: [ "main" ]
 
 env:
-  # कंपाइलर को बिना क्रैश हुए चलने के लिए ज़्यादा मेमोरी दे रहे हैं
   _JAVA_OPTIONS: "-Xmx4g -XX:MaxMetaspaceSize=1g -Djava.awt.headless=true"
   GRADLE_OPTS: "-Xmx4g -XX:MaxMetaspaceSize=1g -Dorg.gradle.jvmargs=-Xmx4g -Djava.awt.headless=true"
 
@@ -39,7 +38,14 @@ jobs:
       run: |
         echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
 
-    # मेमोरी बढ़ा दी है, अब यह बिना रुके असली APK जनरेट करेगा
+    # यह कमांड गिटहब रनर के अंदर अपने आप 'debug.keystore' फ़ाइल बना देगी
+    - name: Generate Dummy Debug Keystore
+      run: |
+        keytool -genkey -v -keystore debug.keystore \
+          -storepass android -alias androiddebugkey -keypass android \
+          -keyalg RSA -keysize 2048 -validity 10000 \
+          -dname "CN=Android Debug,O=Android,C=US"
+
     - name: Build Debug APK
       run: |
         ./gradlew clean assembleDebug \
