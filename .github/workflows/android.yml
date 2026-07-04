@@ -34,11 +34,15 @@ jobs:
       with:
         cache-disabled: true
 
+    # अगर गिटहब सीक्रेट्स खाली है, तो यह एरर से बचाने के लिए एक टेम्परेरी स्ट्रिंग डाल देगा
     - name: Create .env file
       run: |
-        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+        if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+          echo "GEMINI_API_KEY=\"dummy_key_for_build_purposes\"" > .env
+        else
+          echo "GEMINI_API_KEY=\"${{ secrets.GEMINI_API_KEY }}\"" > .env
+        fi
 
-    # यह कमांड गिटहब रनर के अंदर अपने आप 'debug.keystore' फ़ाइल बना देगी
     - name: Generate Dummy Debug Keystore
       run: |
         keytool -genkey -v -keystore debug.keystore \
